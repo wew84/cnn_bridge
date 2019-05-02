@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>cnn_bridge</name>
+  <version>0.8.3</version>
+  <description>The cnn_bridge package take freeze graphs and publishes them as ROS messages</description>
+
+  <maintainer email="ngolombek@gmail.com">Noam C. Golombek</maintainer>
+  <license>BSD</license>
+  <!-- <url type="website">http://wiki.ros.org/cnn_bridge</url> -->
+  <author email="ngolombek@gmail.com">Noam C. Golombek</author>
+  <author email="berengolts@gmail.com">Alexander Beringolts</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_export_depend>message_generation</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+</package>

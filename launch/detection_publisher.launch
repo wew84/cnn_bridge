@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="cnn_bridge" name="detection_bridge" type="cnn_bridge_main.py">
+    <param name="source" value="/home/noam/Videos/Mazi-2019-6.m4v" />
+    <param name="logdir" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/detection/example_hypes.json" />
+    <param name="metadata_source" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/detection/example_metadata.json" />
+    <param name="mode" value="detection" />
+    <param name="input_tensor" value="Placeholder:0"/>
+    <param name="output_tensor" value="concat_10:0,concat_11:0,concat_12:0" />
+    <param name="display" value="yes" />
+    <param name="video_save" value="no" />
+    <param name="cpu" value="no" />
+    <param name="gpu_percent" value="0.1" />
+  </node>
+</launch>

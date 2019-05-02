@@ -1,0 +1,7 @@
+*.pyc
+RUNS/
+DATA/
+*.p
+*.mp4
+.vscode/
+cfg/
