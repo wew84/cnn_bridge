@@ -50,7 +50,7 @@ import timeit
 class ImageSubscriber(object):
     '''A class to subscribe to a ROS camera'''
 
-    def __init__(self, cam_type="usb_cam"):
+    def __init__(self, topic="usb_cam/image_raw"):
         '''Initialize ros publisher, ros subscriber'''
 
         self.currentImage = None
@@ -59,26 +59,14 @@ class ImageSubscriber(object):
         self.frame_count = 0
         self.start_time = timeit.default_timer()
 
-        # subscribed Topic
-        sub_string = ""
-
-        if cam_type == "usb_cam":
-            sub_string = "usb_cam/image_raw"
-        elif cam_type == "cv_cam":
-            sub_string = "cv_camera/image_raw"
-        elif cam_type == "ueye":
-            sub_string = "ueye_0/image_raw"
-        else:
-            raise NameError("Camera type not defined")
 
         if not COMPRESSED:
             self.bridge = CvBridge()
-            self.subscriber = rospy.Subscriber(sub_string,
+            self.subscriber = rospy.Subscriber(topic,
                                                Image, self.callback,  queue_size=1)
         else:
-            sub_string += "/compressed"
             self.subscriber = rospy.Subscriber(
-                sub_string, CompressedImage, self.callback, queue_size=1)
+                topic, CompressedImage, self.callback, queue_size=1)
 
     def callback(self, ros_data):
         '''Callback function of subscribed topic. 

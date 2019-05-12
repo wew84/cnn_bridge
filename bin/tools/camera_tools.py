@@ -55,7 +55,7 @@ class Camera(object):
         self.count = 0
         self.delay = 0
         # Setup ROS and Camera
-        if source.lower() == 'ueye' or source.lower() == 'usb_cam' or source.lower() == 'cv_cam':
+        if "." not in source:
             self.setup_ros_cam(source)
         else:
             self.setup_cv2_cam(source)
@@ -85,7 +85,7 @@ class Camera(object):
             exit(1)
 
         self.camera_type = "ROS"
-        self.video_source = ImageSubscriber(cam_type=source)
+        self.video_source = ImageSubscriber(topic=source)
         self.set_image_parameters(self.get_first_ros_frame())
 
     def setup_cv2_cam(self, source):
