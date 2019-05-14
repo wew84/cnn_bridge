@@ -29,23 +29,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-
-
-# Use compressed image?
-COMPRESSED = False
-
-import rospy
+import timeit
+import numpy as np
 import cv2
 
-if not COMPRESSED:
-    from cv_bridge import CvBridge, CvBridgeError
-    from sensor_msgs.msg import Image
-else:
-    import numpy as np
-    from sensor_msgs.msg import CompressedImage
-
-import timeit
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image, CompressedImage
 
 class ImageSubscriber(object):
     '''A class to subscribe to a ROS camera'''
@@ -55,12 +45,11 @@ class ImageSubscriber(object):
 
         self.currentImage = None
         self.currentHeader = None
-
+        self.compressed = True if "compressed" in topic else False
         self.frame_count = 0
         self.start_time = timeit.default_timer()
 
-
-        if not COMPRESSED:
+        if not self.compressed:
             self.bridge = CvBridge()
             self.subscriber = rospy.Subscriber(topic,
                                                Image, self.callback,  queue_size=1)
@@ -71,8 +60,8 @@ class ImageSubscriber(object):
     def callback(self, ros_data):
         '''Callback function of subscribed topic. 
         Here images get converted to cv2 format'''
-        global count
-        if not COMPRESSED:
+        
+        if not self.compressed:
             self.currentImage = cv2.resize(
                 self.bridge.imgmsg_to_cv2(ros_data, "rgb8"),
                 (640, 480))
@@ -80,12 +69,8 @@ class ImageSubscriber(object):
             np_arr = np.fromstring(ros_data.data, np.uint8)
             image_np = cv2.imdecode(np_arr, 1)
 
-            self.currentImage = cv2.cvtColor(image_np, cv2.BGR2RGB)
+            self.currentImage = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
 
         self.currentHeader = ros_data.header
         
         self.frame_count += 1
-        # if self.frame_count % 100 == 0:
-            # rospy.logwarn("Size:\t" + str(self.currentImage.shape))
-            # rospy.logwarn( "ImgSub:\t" + str(self.frame_count) + ":\t" + 
-                        #    str( float(self.frame_count) / (timeit.default_timer() - self.start_time)))
