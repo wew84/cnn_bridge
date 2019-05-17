@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>cnn_bridge</name>
-  <version>0.8.5</version>
+  <version>0.8.4</version>
   <description>The cnn_bridge package take freeze graphs and publishes them as ROS messages</description>
 
   <maintainer email="ngolombek@gmail.com">Noam C. Golombek</maintainer>
@@ -20,14 +20,14 @@
   <build_export_depend>message_generation</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
 
-  <run_depend>rospy</run_depend>
-  <run_depend>roslaunch</run_depend>
-  <run_depend>message_runtime</run_depend>
-  <run_depend>roslaunch</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>python-tensorflow-pip</run_depend>
-  <run_depend>python-numpy</run_depend>
-  <run_depend>python-opencv</run_depend>
-  <run_depend>roslib</run_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>roslaunch</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>roslaunch</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>python-tensorflow-pip</exec_depend>
+  <exec_depend>python-numpy</exec_depend>
+  <exec_depend>python-opencv</exec_depend>
+  <exec_depend>roslib</exec_depend>
 </package>
