@@ -14,14 +14,20 @@
 
   <build_depend>message_generation</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>roslib</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_export_depend>message_generation</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
 
-  <exec_depend>rospy</exec_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <exec_depend>message_runtime</exec_depend>
-
+  <run_depend>rospy</run_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>roslaunch</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>python-tensorflow-pip</run_depend>
+  <run_depend>python-numpy</run_depend>
+  <run_depend>python-opencv</run_depend>
+  <run_depend>roslib</run_depend>
 </package>
