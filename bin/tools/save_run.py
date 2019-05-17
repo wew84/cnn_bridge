@@ -29,21 +29,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-
-"""
-The VideoSaver module recieves images and saves them to a video
-
-Input: Image
-Output: Video
-
-Submodule of the cnn_publisher program
-
---------------------------------------------------------------------------------
-
-Copyright (c) 2019 Perfetto Team, Technical Division, Israel Defence Force
-
-"""
 from __future__ import print_function
 
 import logging

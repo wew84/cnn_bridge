@@ -1,6 +1,6 @@
 <launch>
   <node pkg="cnn_bridge" name="segmentation_bridge" type="cnn_bridge_main.py">
-    <param name="source" value="/home/noam/Videos/Mazi-2019-6.m4v" />
+    <param name="source" value="usb_cam/image_raw/compressed" />
     <param name="logdir" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/segmentation/example_hypes.json" />
     <param name="metadata_source" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/segmentation/example_metadata.json" />
     <param name="mode" value="segmentation" />
@@ -8,6 +8,6 @@
     <param name="output_tensor" value="Loss_Function/prediction:0" />
     <param name="display" value="yes" />
     <param name="video_save" value="no" />
-    <param name="gpu_percent" value="0.9" />
+    <param name="gpu_percent" value="0.8" />
   </node>
 </launch>

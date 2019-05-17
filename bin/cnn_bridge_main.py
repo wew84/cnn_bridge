@@ -39,12 +39,12 @@ from tools import str2bool
 def parse_args():
     """Parse the arguments provided when the module was initialized"""
 
-    rospy.init_node('segmentation_publisher', log_level=rospy.DEBUG)
+    rospy.init_node('cnn_bridge', log_level=rospy.DEBUG)
     params = {}
     #'The camera or video file to get the pictures from, '
     #          'options are: (String, Required) \n If video file, then '
-    #          'path to the video file \n If ROS camera, then uEye, '
-    #         'usb_cam \n If CV2 device, then device ID (0, 1, 3...)'
+    #          'path to the video file \n If ROS camera, then the topic name
+    #          '\n If CV2 device, then device ID (0, 1, 3...)'
     if rospy.has_param('~source'):
         if isinstance(rospy.get_param('~source'), str):
             params['source'] = rospy.get_param('~source')
@@ -54,7 +54,7 @@ def parse_args():
     else:
         raise rospy.ROSInitException('Param source is required (String)')
 
-    # Path to KittiSeg Model Directory (String, Required)
+    # Path to Hypes file (String, Required)
     if rospy.has_param('~logdir'):
         if isinstance(rospy.get_param('~logdir'), str):
             params['logdir'] = rospy.get_param('~logdir')
@@ -64,6 +64,7 @@ def parse_args():
     else:
         raise rospy.ROSInitException('Param logdir is required (String)')
 
+    # Path to the metadata file
     if rospy.has_param('~metadata_source'):
         if isinstance(rospy.get_param('~metadata_source'), str):
             params['metadata_source'] = rospy.get_param('~metadata_source')
@@ -73,6 +74,7 @@ def parse_args():
     else:
         raise rospy.ROSInitException('Param source is required (String)')
 
+    # Self explanatory.
     if rospy.has_param('~input_tensor'):
         if isinstance(rospy.get_param('~input_tensor'), str):
             params['input_tensor'] = rospy.get_param('~input_tensor')
@@ -82,6 +84,7 @@ def parse_args():
     else:
         raise rospy.ROSInitException('Param input_tensor is required (String)')
 
+    # If segmentation, self explanatory. If detection an array of three tensors that are [boxes,scores,classes]
     if rospy.has_param('~output_tensor'):
         if isinstance(rospy.get_param('~output_tensor'), str):
             params['output_tensor'] = rospy.get_param('~output_tensor')
@@ -134,7 +137,7 @@ def parse_args():
     else:
         raise rospy.ROSInitException('Param mode is required (String)')
 
-    # Sets what mode the program is running in (String, Either detection or segmentation)
+    # Sets the percentage of an Nvidia GPU to use. This is used generally for running simultaneous networks.
     if rospy.has_param('~gpu_percent'):
         if isinstance(rospy.get_param('~gpu_percent'), float):
             params['gpu_percent'] = rospy.get_param('~gpu_percent')
