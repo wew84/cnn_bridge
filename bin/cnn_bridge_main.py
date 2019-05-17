@@ -39,7 +39,7 @@ from tools import str2bool
 def parse_args():
     """Parse the arguments provided when the module was initialized"""
 
-    rospy.init_node('segmentation_publisher', log_level=rospy.DEBUG)
+    rospy.init_node('cnn_bridge', log_level=rospy.DEBUG)
     params = {}
     #'The camera or video file to get the pictures from, '
     #          'options are: (String, Required) \n If video file, then '
