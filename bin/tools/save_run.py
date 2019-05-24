@@ -79,6 +79,10 @@ class VideoSaver(object):
             self.mask_video_out = None
             self.open_out_video()
 
+        # Setup video
+        if 1 in self.run_modes or 4 in self.run_modes or 16 in self.run_modes:
+            self.setup_image_saving()
+
     def __del__(self):
         self.close_video()
 
@@ -164,17 +168,9 @@ class VideoSaver(object):
         Output: None"""
         base_dir_name = self.save_path + self.base_name
 
-        if path.exists(base_dir_name + '_org') or path.exists(base_dir_name + '_mask'):
-            add_ind = 0
-            dir_name = base_dir_name
-            while path.exists(dir_name + '_org') or path.exists(dir_name + '_mask'):
-                add_ind += 1
-                dir_name = base_dir_name + \
-                    '_%d' % add_ind
-        else:
-            dir_name = base_dir_name
-
-        mkdir(dir_name + '_org')
-        mkdir(dir_name + '_mask')
-        rospy.loginfo('Folders for images ' + dir_name + '_org' +
-                      ' and ' + dir_name + '_mask' + ' were created')
+        if 1 in self.run_modes:
+            mkdir(base_dir_name + '_org')
+        if 4 in self.run_modes:
+            mkdir(base_dir_name + '_overlay')
+        if 16 in self.run_modes:
+            mkdir(base_dir_name + '_mask')

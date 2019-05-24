@@ -150,23 +150,45 @@ class CNNManager(object):
 
             time_iter_no_drawing = timeit.default_timer() - time_iter_start_inner
 
-            # Plot the hard prediction as green overlay
+            # Plot the hard prediction as overlay
             if True or self.SHOW_DISPLAY or self.h_video_out is not None:
                 if self.mode == 'segmentation':
-                    image_green = self.drawing_tools.overlay_segmentation(
+                    image_overlay = self.drawing_tools.overlay_segmentation(
                         image_frame.copy(), cnn_result)
                 elif self.mode == 'detection':
-                    image_green = self.drawing_tools.draw_detection(
+                    image_overlay = self.drawing_tools.draw_detection(
                         image_frame.copy(), cnn_result['boxes'],  cnn_result['scores'],  cnn_result['classes'], [320, 320])
 
             time_iter_inner = timeit.default_timer() - time_iter_start_inner
 
             # Show images and save video
             if self.SHOW_DISPLAY or self.h_video_out is not None:
-                frame_green = cv2.cvtColor(image_green, cv2.COLOR_RGB2BGR)
+                frame_overlay = cv2.cvtColor(image_overlay, cv2.COLOR_RGB2BGR)
                 if self.SHOW_DISPLAY:
                     cv2.imshow('cnn_bridge', cv2.resize(
-                        frame_green, dsize=self.camera.image_size_to_show))
+                        frame_overlay, dsize=self.camera.image_size_to_show))
+
+                if self.DO_VIDEO_SAVE:
+                    if 1 in self.h_video_out.run_modes:
+                        assert os.path.exists(
+                            self.h_video_out.save_path + self.h_video_out.base_name + '_org')
+                        cv2.imwrite(self.h_video_out.save_path + self.h_video_out.base_name +
+                                    '_org/' + str(image_header.seq) + '.jpg', cv2.cvtColor(image_frame, cv2.COLOR_RGB2BGR))
+
+                    if 4 in self.h_video_out.run_modes:
+                        assert os.path.exists(
+                            self.h_video_out.save_path + self.h_video_out.base_name + '_overlay')
+                        cv2.imwrite(self.h_video_out.save_path + self.h_video_out.base_name +
+                                    '_overlay/' + str(image_header.seq) + '.jpg', frame_overlay)
+
+                    if 16 in self.h_video_out.run_modes:
+                        assert os.path.exists(
+                            self.h_video_out.save_path + self.h_video_out.base_name + '_overlay')
+                        opacity = self.drawing_tools.opacity
+                        self.drawing_tools.opacity = 0
+                        cv2.imwrite(self.h_video_out.save_path + self.h_video_out.base_name + '_mask/' + str(
+                            image_header.seq) + '.jpg',  cv2.cvtColor(self.drawing_tools.overlay_segmentation(image_frame.copy(), cnn_result), cv2.COLOR_RGB2BGR))
+                        self.drawing_tools.opacity = opacity
 
                 if self.h_video_out is not None:
                     if 2 in self.h_video_out.run_modes:
@@ -176,7 +198,7 @@ class CNNManager(object):
 
                     if 8 in self.h_video_out.run_modes:
                         assert self.h_video_out.overlay_video_out.isOpened()
-                        self.h_video_out.overlay_video_out.write(frame_green)
+                        self.h_video_out.overlay_video_out.write(frame_overlay)
 
                     if 32 in self.h_video_out.run_modes:
                         assert self.h_video_out.mask_video_out.isOpened()
