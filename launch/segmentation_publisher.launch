@@ -1,13 +1,25 @@
 <launch>
-  <node pkg="cnn_bridge" name="segmentation_bridge" type="cnn_bridge_main.py">
-    <param name="source" value="usb_cam/image_raw/compressed" />
-    <param name="logdir" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/segmentation/example_hypes.json" />
-    <param name="metadata_source" value="/home/noam/catkin_ws/src/cnn_bridge/cfg/segmentation/example_metadata.json" />
+  <arg name="source" />
+  <arg name="logdir" />
+  <arg name="metadata_source" />
+  <arg name="mode" />
+  <arg name="input_tensor" />
+  <arg name="output_tensor" />
+  <arg name="display" default="true" />
+  <arg name="video_save" default="true" />
+  <arg name="cpu" default="false" />
+  <arg name="gpu_percent" default="1.0" />
+
+  <node pkg="cnn_bridge" name="detection_bridge" type="cnn_bridge_main.py">
+    <param name="source" value="$(arg source)" />
+    <param name="logdir" value="$(arg logdir)" />
+    <param name="metadata_source" value="$(arg metadata_source)" />
     <param name="mode" value="segmentation" />
-    <param name="input_tensor" value="inputs/image-input:0" />
-    <param name="output_tensor" value="Loss_Function/prediction:0" />
-    <param name="display" value="yes" />
-    <param name="video_save" value="no" />
-    <param name="gpu_percent" value="0.8" />
+    <param name="input_tensor" value="$(arg input_tensor)" />
+    <param name="output_tensor" value="$(arg output_tensor)" />
+    <param name="display" value="$(arg display)" />
+    <param name="video_save" value="$(arg video_save)" />
+    <param name="cpu" value="$(arg cpu)" />
+    <param name="gpu_percent" value="$(arg gpu_percent)" />
   </node>
 </launch>
