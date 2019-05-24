@@ -105,13 +105,33 @@ def parse_args():
     else:
         params['display'] = True
 
-    # File to save the video to: (String) \n Use False to disable\n '
-    #          'True saves to Camera__datetime \n If a string is provided it '
-    #          'will be the video title
-    if rospy.has_param('~video_save'):
-        params['video_save'] = rospy.get_param('~video_save')
+    # Mode to save the inputs / outputs of the network: (Int, default 0)
+    #   Add the modes to create what you want:
+    #   0 - No recording
+    #   1 - Save the raw images entering the network
+    #   2 - Save the raw images entering the network as a video
+    #   4 - Save the images entering the network with the mask overlayed
+    #   8 - Save the images entering the network with the mask overlayed as a video
+    #   16 - Save the outputted mask
+    #   32 - Save the outputted mask as a video
+    if rospy.has_param('~save_mode'):
+        if isinstance(rospy.get_param('~save_mode'), int):
+            params['save_mode'] = rospy.get_param('~save_mode')
+        else:
+            raise rospy.ROSInitException(
+                'The save_mode needs to be of type: Int')
     else:
-        params['video_save'] = ''
+        params['save_mode'] = 0
+
+    # Path to save to: (String, default None)
+    if rospy.has_param('~save_path'):
+        if isinstance(rospy.get_param('~save_path'), str):
+            params['save_path'] = rospy.get_param('~save_path')
+        else:
+            raise rospy.ROSInitException(
+                'The save_path needs to be of type: String')
+    else:
+        params['save_path'] = ""
 
     # Sets whether to use an Nvidia GPU (bool, Default False)
     if rospy.has_param('~cpu'):
@@ -160,8 +180,8 @@ if __name__ == "__main__":
     elif args['mode'] == 'detection':
         tensor_io['output_tensor'] = args['output_tensor'].split(',')
 
-    manager = CNNManager(args['source'], args['video_save'], args['logdir'], args['cpu'],
-                         args['display'], tensor_io, args['mode'], gpu_percent=args['gpu_percent'])
+    manager = CNNManager(args['source'], args['save_mode'], args['logdir'], args['cpu'],
+                         args['display'], tensor_io, args['mode'], gpu_percent=args['gpu_percent'], save_path=args['save_path'])
     metadata_srv = MetadataService(
         manager.camera.original_image_size, args['metadata_source'], args['logdir'], args['mode'])
     manager.run_loop()

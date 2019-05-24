@@ -45,9 +45,20 @@ def exit_handler(camera, video_out, statistics_engine):
         camera.video_source.release()
 
     if (video_out is not None and
-            video_out.h_video_out is not None and
-            video_out.h_video_out.isOpened()):
-        video_out.h_video_out.release()
+            video_out.org_video_out is not None and
+            video_out.org_video_out.isOpened()):
+        video_out.org_video_out.release()
+
+    if (video_out is not None and
+            video_out.overlay_video_out is not None and
+            video_out.overlay_video_out.isOpened()):
+        video_out.overlay_video_out.release()
+
+    if (video_out is not None and
+            video_out.mask_video_out is not None and
+            video_out.mask_video_out.isOpened()):
+        video_out.mask_video_out.release()
+
     stat_string = statistics_engine.process_statistics()
     rospy.logerr(stat_string)
     cv2.destroyAllWindows()

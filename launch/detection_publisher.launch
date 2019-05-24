@@ -6,7 +6,8 @@
   <arg name="input_tensor" />
   <arg name="output_tensor" />
   <arg name="display" default="true" />
-  <arg name="video_save" default="true" />
+  <arg name="save_path" default="" />
+  <arg name="save_mode" default="0" />
   <arg name="cpu" default="false" />
   <arg name="gpu_percent" default="1.0" />
 
@@ -18,7 +19,8 @@
     <param name="input_tensor" value="$(arg input_tensor)" />
     <param name="output_tensor" value="$(arg output_tensor)" />
     <param name="display" value="$(arg display)" />
-    <param name="video_save" value="$(arg video_save)" />
+    <param name="save_mode" value="$(arg save_mode)" />
+    <param name="save_path" value="$(arg save_path)" />
     <param name="cpu" value="$(arg cpu)" />
     <param name="gpu_percent" value="$(arg gpu_percent)" />
   </node>

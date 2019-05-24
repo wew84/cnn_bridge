@@ -58,13 +58,12 @@ except ImportError:
 
 
 class CNNManager(object):
-    def __init__(self, source, video_save, logdir, cpu, display, tensor_io, mode, gpu_percent=1):
+    def __init__(self, source, save_mode, logdir, cpu, display, tensor_io, mode, gpu_percent=1, save_path=""):
         self.statistics_engine = StatisticsEngine()
 
         self.mode = mode
         # setup video output
-        self.DO_VIDEO_SAVE = str2bool(video_save, return_string=True)
-        assert not self.DO_VIDEO_SAVE  # TODO: Functions to support are not implented
+        self.DO_VIDEO_SAVE = save_mode != 0
 
         self.camera = Camera(source)
         tmp_image, tmp_frame = self.camera.get_image()
@@ -75,10 +74,11 @@ class CNNManager(object):
                 video_name = self.camera.get_from_camera_video_name()
 
                 if not video_name:  # Means we get empty from camera, means we are in video
-                    video_name = get_from_video_out_video_name(args)
+                    video_name = source[source.rfind(
+                        '/')+1:-(len(source)-source.find('.'))]
 
             self.h_video_out = VideoSaver(
-                tmp_image, video_name=video_name)
+                tmp_image, save_mode, name=video_name, save_path=save_path)
             self.h_video_out.print_info()
 
             self.DO_VIDEO_SAVE = True
@@ -95,12 +95,14 @@ class CNNManager(object):
         if self.mode == 'segmentation':
             from segmentation import MaskPublisher
             from segmentation import DeepLabSegmenter as SegmentationProcessor
-            self.cnn_processor = SegmentationProcessor(logdir, self.camera.original_image_size, tensor_io, runCPU=cpu, gpu_percent=gpu_percent)
-				
+            self.cnn_processor = SegmentationProcessor(
+                logdir, self.camera.original_image_size, tensor_io, runCPU=cpu, gpu_percent=gpu_percent)
+
         elif self.mode == 'detection':
             from detection import YoloDetector as YoloProcessor
             from detection import DetectionPublisher
-            self.cnn_processor = YoloProcessor(logdir, self.camera.original_image_size, tensor_io, runCPU=cpu, gpu_percent=gpu_percent)
+            self.cnn_processor = YoloProcessor(
+                logdir, self.camera.original_image_size, tensor_io, runCPU=cpu, gpu_percent=gpu_percent)
 
         self.statistics_engine.set_images_sizes(
             self.camera.original_image_size, self.cnn_processor.tools.processing_image_size)
@@ -109,11 +111,11 @@ class CNNManager(object):
                         self.h_video_out, self.statistics_engine)
 
         self.statistics_engine.set_time_end_of_start(timeit.default_timer())
-        
+
         if self.mode == 'segmentation':
-        	self.mask_publisher = MaskPublisher(
-            	self.camera.original_image_size[0], self.camera.original_image_size[1])
-        	self.drawing_tools = DrawingTools('segmentation')
+            self.mask_publisher = MaskPublisher(
+                self.camera.original_image_size[0], self.camera.original_image_size[1])
+            self.drawing_tools = DrawingTools('segmentation')
         elif self.mode == 'detection':
             self.detection_publisher = DetectionPublisher()
             self.drawing_tools = DrawingTools('detection')
@@ -131,7 +133,7 @@ class CNNManager(object):
                 break
 
             # Open/Close video
-            if self.DO_VIDEO_SAVE is not False and count % video_out_grid == 0 and count > 0:
+            if self.DO_VIDEO_SAVE is not False and count % 1000 == 0 and count > 0:
                 self.h_video_out.open_out_video(count=count)
 
             time_iter_start_inner = timeit.default_timer()
@@ -141,22 +143,21 @@ class CNNManager(object):
                 image_frame)
 
             # send way_prediction mask
-            if self.mode == 'segmentation':	
+            if self.mode == 'segmentation':
                 self.mask_publisher.send_mask(cnn_result, image_header)
             elif self.mode == 'detection':
-				self.detection_publisher.send_mask(cnn_result, image_header)
-            	
+                self.detection_publisher.send_mask(cnn_result, image_header)
 
             time_iter_no_drawing = timeit.default_timer() - time_iter_start_inner
 
             # Plot the hard prediction as green overlay
             if True or self.SHOW_DISPLAY or self.h_video_out is not None:
-                if self.mode == 'segmentation':	
-                    image_green = self.drawing_tools.overlay_segmentation(image_frame.copy(), cnn_result)
+                if self.mode == 'segmentation':
+                    image_green = self.drawing_tools.overlay_segmentation(
+                        image_frame.copy(), cnn_result)
                 elif self.mode == 'detection':
-					image_green = self.drawing_tools.draw_detection(
-                    	image_frame.copy(), cnn_result['boxes'],  cnn_result['scores'],  cnn_result['classes'], [320,320])
-				
+                    image_green = self.drawing_tools.draw_detection(
+                        image_frame.copy(), cnn_result['boxes'],  cnn_result['scores'],  cnn_result['classes'], [320, 320])
 
             time_iter_inner = timeit.default_timer() - time_iter_start_inner
 
@@ -164,18 +165,26 @@ class CNNManager(object):
             if self.SHOW_DISPLAY or self.h_video_out is not None:
                 frame_green = cv2.cvtColor(image_green, cv2.COLOR_RGB2BGR)
                 if self.SHOW_DISPLAY:
-                    cv2.imshow('Path prediction', cv2.resize(
+                    cv2.imshow('cnn_bridge', cv2.resize(
                         frame_green, dsize=self.camera.image_size_to_show))
 
                 if self.h_video_out is not None:
-                    assert self.h_video_out.h_video_out.isOpened()
-
-                    if self.camera.camera_type is "cv2vid":
-                        self.h_video_out.h_video_out.write(frame_green)
-                    else:
-                        # the processing is done in RGB mode, but video writter expect (as part of cv2) images in BGR
-                        self.h_video_out.h_video_out.write(
+                    if 2 in self.h_video_out.run_modes:
+                        assert self.h_video_out.org_video_out.isOpened()
+                        self.h_video_out.org_video_out.write(
                             cv2.cvtColor(image_frame, cv2.COLOR_RGB2BGR))
+
+                    if 8 in self.h_video_out.run_modes:
+                        assert self.h_video_out.overlay_video_out.isOpened()
+                        self.h_video_out.overlay_video_out.write(frame_green)
+
+                    if 32 in self.h_video_out.run_modes:
+                        assert self.h_video_out.mask_video_out.isOpened()
+                        opacity = self.drawing_tools.opacity
+                        self.drawing_tools.opacity = 0
+                        self.h_video_out.mask_video_out.write(
+                            self.drawing_tools.overlay_segmentation(image_frame.copy(), cnn_result))
+                        self.drawing_tools.opacity = opacity
 
             # record time
             time_iter = timeit.default_timer() - time_iter_start

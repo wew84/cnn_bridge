@@ -44,7 +44,7 @@ from test_cam import testCam
 
 class Camera(object):
     """Class defining a camera"""
-    def __init__(self, source, save_images=False):
+    def __init__(self, source):
         self.original_image_size = None
         self.show_size_ratio = None
         self.image_size_to_show = None
@@ -59,9 +59,6 @@ class Camera(object):
             self.setup_ros_cam(source)
         else:
             self.setup_cv2_cam(source)
-
-        if save_images:
-            self.setup_image_saving()
 
     def __del__(self):
         if "cv2" in self.camera_type and self.video_source.isOpened():
@@ -215,24 +212,3 @@ class Camera(object):
                 datetime.datetime.now().strftime("%Y-%m-%d__%H:%M:%S")
         else:
             return ''
-
-    def setup_image_saving(self):
-        """Set up the ability to save all the capture images
-        Input: None
-        Output: None"""
-        base_dir_name = self.camera_type + datetime.datetime.now().strftime("%Y-%m-%d__%H:%M:%S")
-
-        if path.exists(base_dir_name + '_org') or path.exists(base_dir_name + '_grn'):
-            add_ind = 0
-            dir_name = base_dir_name
-            while path.exists(dir_name + '_org') or path.exists(dir_name + '_grn'):
-                add_ind += 1
-                dir_name = base_dir_name + \
-                    '_%d' % add_ind
-        else:
-            dir_name = base_dir_name
-
-        mkdir(dir_name + '_org')
-        mkdir(dir_name + '_grn')
-        rospy.loginfo('Folders for images ' + dir_name + '_org' +
-                     ' and ' + dir_name + '_grn' + ' were created')

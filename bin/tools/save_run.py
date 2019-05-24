@@ -32,24 +32,52 @@
 from __future__ import print_function
 
 import logging
+from os import mkdir, path
 import datetime
 import cv2
 import rospy
 
+
+def get_powers(mode):
+    flags = []
+    power = 5
+    while mode > 0 and power >= 0:
+        if mode - 2**power >= 0:
+            flags.append(2**power)
+            mode = mode - 2**power
+        power -= 1
+    return flags
+
+
 class VideoSaver(object):
     """A class to save images into a video"""
-    def __init__(self, image, video_name=""):
-        self.h_video_out = None
-        self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        if video_name is "" or video_name is True:
-            self.video_base_name = 'Camera__' + \
+
+    def __init__(self, image, mode, save_path="", name=""):
+
+        rospy.logerr(mode)
+        self.run_modes = get_powers(mode)
+        if save_path != "" and save_path[len(save_path)-1] != '/':
+            self.save_path = save_path + '/'
+        else:
+            self.save_path = save_path
+
+        # Setup name
+        if name is "" or name is True:
+            self.base_name = 'Camera__' + \
                 datetime.datetime.now().strftime("%Y-%m-%d__%H:%M:%S")
         else:
-            self.video_base_name = video_name
-        (height, width, _) = image.shape
-        self.video_sz = (width, height)
-        self.open_out_video()
-        # self.print_info()
+            self.base_name = datetime.datetime.now().strftime(
+                "%Y-%m-%d_%H:%M:%S") + "___" + name
+
+        # Setup video
+        if 2 in self.run_modes or 8 in self.run_modes or 32 in self.run_modes:
+            self.fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            (height, width, _) = image.shape
+            self.video_sz = (width, height)
+            self.org_video_out = None
+            self.overlay_video_out = None
+            self.mask_video_out = None
+            self.open_out_video()
 
     def __del__(self):
         self.close_video()
@@ -62,10 +90,19 @@ class VideoSaver(object):
             Output:
                 None
         """
-        if self.h_video_out is not None and self.h_video_out.isOpened():
+        if self.org_video_out is not None and self.org_video_out.isOpened():
+            self.org_video_out.release()
+            self.org_video_out = None
+
+        if self.overlay_video_out is not None and self.overlay_video_out.isOpened():
             # print('Close ' + self.video_base_name + ' video')
-            self.h_video_out.release()
-            self.h_video_out = None
+            self.overlay_video_out.release()
+            self.overlay_video_out = None
+
+        if self.mask_video_out is not None and self.mask_video_out.isOpened():
+            # print('Close ' + self.video_base_name + ' video')
+            self.mask_video_out.release()
+            self.mask_video_out = None
 
     def open_out_video(self, count=None):
         """Open a video out
@@ -74,24 +111,70 @@ class VideoSaver(object):
         Output: None"""
 
         self.close_video()
+        if 2 in self.run_modes:
+            if count is not None:
+                name = self.save_path + self.base_name + '_%d_' % count + '.mp4'
+            else:
+                name = self.save_path + self.base_name + '.mp4'
+            self.org_video_out = cv2.VideoWriter(
+                name, self.fourcc, 10.0, self.video_sz)
 
-        if count is not None:
-            video_name = self.video_base_name + '._%d_' % count + '.mp4'
+        if 8 in self.run_modes:
+            if count is not None:
+                name = self.save_path + self.base_name + '_overlay_%d_' % count + '.mp4'
+            else:
+                name = self.save_path + self.base_name + '_overlay.mp4'
+            self.overlay_video_out = cv2.VideoWriter(
+                name, self.fourcc, 10.0, self.video_sz)
+
+        if 32 in self.run_modes:
+            if count is not None:
+                name = self.save_path + self.base_name + '_mask_%d_' % count + '.mp4'
+            else:
+                name = self.save_path + self.base_name + '_mask.mp4'
+            self.mask_video_out = cv2.VideoWriter(
+                name, self.fourcc, 10.0, self.video_sz)
+
+        if (self.org_video_out is not None and self.org_video_out.isOpened()) \
+                or (self.overlay_video_out is not None and self.overlay_video_out.isOpened()) \
+                or (self.mask_video_out is not None and self.mask_video_out.isOpened()):
+            rospy.loginfo("Open video stream {0} of size ({1}, {2})".format(
+                name, self.video_sz[0], self.video_sz[1]))
         else:
-            video_name = self.video_base_name + '.mp4'
-
-        self.h_video_out = cv2.VideoWriter(
-            video_name, self.fourcc, 10.0, self.video_sz)
-
-        if self.h_video_out.isOpened():
-            rospy.loginfo("Open video stream {0} of size ({1}, {2})".format(video_name, self.video_sz[0],self.video_sz[1]))
-        else:
-            rospy.logfatal("Failed to open video {0}".format(video_name))
+            rospy.logfatal("Failed to open video {0}".format(name))
 
     def print_info(self):
         """Print info for debug """
 
-        if self.h_video_out is not None:
-            rospy.logdebug('Video_base_name: {0} is opened: {1}'.\
-            format( self.video_base_name, self.h_video_out.isOpened()))
-    
+        if 2 in self.run_modes and self.org_video_out is not None:
+            rospy.logdebug('Video_base_name: {0} is opened: {1}'.
+                           format(self.base_name, self.org_video_out.isOpened()))
+
+        if 8 in self.run_modes and self.overlay_video_out is not None:
+            rospy.logdebug('Video_base_name: {0} is opened: {1}'.
+                           format(self.base_name, self.org_video_out.isOpened()))
+
+        if 32 in self.run_modes and self.mask_video_out is not None:
+            rospy.logdebug('Video_base_name: {0} is opened: {1}'.
+                           format(self.base_name, self.mask_video_out.isOpened()))
+
+    def setup_image_saving(self):
+        """Set up the ability to save all the capture images
+        Input: None
+        Output: None"""
+        base_dir_name = self.save_path + self.base_name
+
+        if path.exists(base_dir_name + '_org') or path.exists(base_dir_name + '_mask'):
+            add_ind = 0
+            dir_name = base_dir_name
+            while path.exists(dir_name + '_org') or path.exists(dir_name + '_mask'):
+                add_ind += 1
+                dir_name = base_dir_name + \
+                    '_%d' % add_ind
+        else:
+            dir_name = base_dir_name
+
+        mkdir(dir_name + '_org')
+        mkdir(dir_name + '_mask')
+        rospy.loginfo('Folders for images ' + dir_name + '_org' +
+                      ' and ' + dir_name + '_mask' + ' were created')
