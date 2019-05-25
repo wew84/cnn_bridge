@@ -243,5 +243,4 @@ class CNNManager(object):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
-        rospy.logfatal('CNN stopped!')
-        rospy.signal_shutdown('Segmentation closed. Shutting down...')
+        rospy.signal_shutdown('CNN closed. Shutting down...')
